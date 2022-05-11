@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { createQueryBuilder, getRepository, Repository } from 'typeorm';
+import { createQueryBuilder, Repository } from 'typeorm';
+import { ResultRo } from 'types/app';
 import { CreateWeekReportDto } from './dto/create-week-report.dto';
 import { UpdateWeekReportDto } from './dto/update-week-report.dto';
 import { WeekReportEntity } from './entities/week-report.entity';
-import { WeekReportListVO } from './vo/week-report-list.vo';
+import { GetWeekReportVO, WeekReportListVO } from './vo/week-report.vo';
 import { rcStateEnum } from '/@/constants/system.constant';
 import logger from '/@/utils/logger';
 
@@ -39,12 +40,16 @@ export class WeekReportService {
    *
    * @description 根据年份查询周报告数据
    */
-  async getReportByYear(year: number): Promise<Array<WeekReportListVO>> {
+  async getReportByYear(
+    query: GetWeekReportVO,
+  ): Promise<ResultRo<WeekReportListVO>> {
+    const { year, pageSize = 10, currentPage = 1 } = query;
+
     logger.info(
-      `getReportByYear 根据年份查询周报告数据条件: ${JSON.stringify(year)}`,
+      `getReportByYear 根据年份查询周报告数据条件: ${JSON.stringify(query)}`,
     );
 
-    const query = createQueryBuilder(WeekReportEntity, 't1')
+    const qb = createQueryBuilder(WeekReportEntity, 't1')
       .select([
         't1.id',
         't1.title',
@@ -57,14 +62,22 @@ export class WeekReportService {
       ])
       .where('Date_FORMAT(t1.start_date, "%Y") = :year', { year })
       .andWhere('t1.rc_state = :rcState', { rcState: rcStateEnum.Exist })
-      .orderBy('t1.start_date', 'DESC');
+      .orderBy('t1.start_date', 'DESC')
+      .take(pageSize)
+      .skip(pageSize * (currentPage - 1));
 
-    const report = await query.getMany();
+    const count = await qb.getCount();
+    const list = await qb.getMany();
+
+    const result: ResultRo<WeekReportListVO> = {
+      list,
+      count,
+    };
 
     logger.info(
-      `getReportByYear 根据年份查询周报告数据结果: ${JSON.stringify(report)}`,
+      `getReportByYear 根据年份查询周报告数据结果: ${JSON.stringify(list)}`,
     );
 
-    return report;
+    return result;
   }
 }

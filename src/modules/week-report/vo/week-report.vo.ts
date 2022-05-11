@@ -1,4 +1,15 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
+export class GetWeekReportVO {
+  @ApiProperty({ description: '年份', default: new Date().getFullYear() })
+  year: number;
+
+  @ApiPropertyOptional({ description: '每页数据', default: 10 })
+  pageSize: number;
+
+  @ApiPropertyOptional({ description: '当前页数', default: 1 })
+  currentPage: number;
+}
 
 export class WeekReportListVO {
   @ApiProperty({ name: 'id' })
