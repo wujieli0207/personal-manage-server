@@ -24,16 +24,6 @@ export class WeekReportController {
     return this.weekReportService.create(createWeekReportDto);
   }
 
-  @Get()
-  findAll() {
-    return this.weekReportService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.weekReportService.findOne(+id);
-  }
-
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -45,6 +35,12 @@ export class WeekReportController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.weekReportService.remove(+id);
+  }
+
+  @Get('getWeekReport/:id')
+  @ApiOperation({ summary: '根据id获取一个周报数据' })
+  getReportById(@Param('id') id: string) {
+    return this.weekReportService.getReportById(Number(id));
   }
 
   @ApiOperation({ summary: '根据年份查询周报告数据' })

@@ -20,10 +20,6 @@ export class WeekReportService {
     return 'This action adds a new weekReport';
   }
 
-  findAll() {
-    return `This action returns all weekReport`;
-  }
-
   findOne(id: number) {
     return `This action returns a #${id} weekReport`;
   }
@@ -38,6 +34,35 @@ export class WeekReportService {
 
   /**
    *
+   * @description 根据id获取一个周报数据
+   */
+  async getReportById(id: number): Promise<WeekReportListVO> {
+    logger.info(`getReportById 根据id获取一个周报数据查询条件: ${id}`);
+
+    const qb = createQueryBuilder(WeekReportEntity, 't1')
+      .select([
+        't1.id',
+        't1.title',
+        't1.workDayPomo',
+        't1.restDayPomo',
+        't1.workoutTimes',
+        't1.averageSleepHour',
+        't1.startDate',
+        't1.endDate',
+      ])
+      .where('t1.id = :id', { id });
+
+    const result: WeekReportListVO = await qb.getOne();
+
+    logger.info(
+      `getReportById 根据id获取一个周报数据查询结果: ${JSON.stringify(result)}`,
+    );
+
+    return result;
+  }
+
+  /**
+   *
    * @description 根据年份查询周报告数据
    */
   async getReportByYear(
@@ -46,7 +71,9 @@ export class WeekReportService {
     const { year, pageSize = 10, currentPage = 1 } = query;
 
     logger.info(
-      `getReportByYear 根据年份查询周报告数据条件: ${JSON.stringify(query)}`,
+      `getReportByYear 根据年份查询周报告数据查询条件: ${JSON.stringify(
+        query,
+      )}`,
     );
 
     const qb = createQueryBuilder(WeekReportEntity, 't1')
@@ -75,7 +102,7 @@ export class WeekReportService {
     };
 
     logger.info(
-      `getReportByYear 根据年份查询周报告数据结果: ${JSON.stringify(list)}`,
+      `getReportByYear 根据年份查询周报告数据查询结果: ${JSON.stringify(list)}`,
     );
 
     return result;
