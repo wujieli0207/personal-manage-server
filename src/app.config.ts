@@ -9,7 +9,6 @@ export const APP = {
 /**
  *
  * @description 设置 swagger 文档
- * ! TODO Swagger 配置没有生效
  */
 export const setupSwagger = (app: INestApplication) => {
   const config = new DocumentBuilder()
