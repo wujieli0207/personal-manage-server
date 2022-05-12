@@ -19,12 +19,14 @@ import { GetWeekReportVO, WeekReportListVO } from './vo/week-report.vo';
 export class WeekReportController {
   constructor(private readonly weekReportService: WeekReportService) {}
 
-  @Post()
+  @Post('/create')
+  @ApiOperation({ summary: '新增数据' })
   create(@Body() createWeekReportDto: CreateWeekReportDto) {
     return this.weekReportService.create(createWeekReportDto);
   }
 
-  @Patch(':id')
+  @Post('/update/:id')
+  @ApiOperation({ summary: '修改数据' })
   update(
     @Param('id') id: string,
     @Body() updateWeekReportDto: UpdateWeekReportDto,
@@ -32,9 +34,10 @@ export class WeekReportController {
     return this.weekReportService.update(+id, updateWeekReportDto);
   }
 
-  @Delete(':id')
+  @Post('/remove/:id')
+  @ApiOperation({ summary: '删除数据' })
   remove(@Param('id') id: string) {
-    return this.weekReportService.remove(+id);
+    return this.weekReportService.remove(Number(id));
   }
 
   @Get('getWeekReport/:id')

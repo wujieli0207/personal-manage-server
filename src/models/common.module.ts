@@ -18,7 +18,7 @@ export abstract class Common {
   })
   createdBy: string;
 
-  // ! TODO 自动更新创建时间、修改时间待修复
+  // ! TODO 创建时间在创建数据时自动插入
   @CreateDateColumn({
     name: 'created_time',
     type: 'timestamp',
@@ -26,6 +26,7 @@ export abstract class Common {
   })
   createdTime: Date;
 
+  // ! TODO 更新人在修改数据时自动更新
   @Column({
     name: 'updated_by',
     type: 'varchar',

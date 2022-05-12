@@ -1,5 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  HttpException,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { cloneDeep } from 'lodash';
 import { createQueryBuilder, Repository } from 'typeorm';
 import { ResultRo } from 'types/app';
 import { CreateWeekReportDto } from './dto/create-week-report.dto';
@@ -16,20 +22,96 @@ export class WeekReportService {
     private readonly weekReportRepository: Repository<WeekReportEntity>,
   ) {}
 
-  create(createWeekReportDto: CreateWeekReportDto) {
-    return 'This action adds a new weekReport';
+  /**
+   *
+   * @description 新增数据
+   */
+  async create(
+    createWeekReportDto: CreateWeekReportDto,
+  ): Promise<WeekReportListVO> {
+    logger.info(
+      `create 新增数据请求参数: ${JSON.stringify(createWeekReportDto)}`,
+    );
+
+    const { title } = createWeekReportDto;
+
+    if (!title) {
+      throw new HttpException('缺少周总结数据标题', HttpStatus.UNAUTHORIZED);
+    }
+
+    const weekReport = await this.weekReportRepository.findOne({
+      where: { title },
+    });
+
+    if (weekReport) {
+      throw new HttpException(
+        '该周总结数据标题已存在',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+
+    return await this.weekReportRepository.save(createWeekReportDto);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} weekReport`;
+  /**
+   *
+   * @description 更新数据
+   */
+  async update(
+    id: number,
+    updateWeekReportDto: UpdateWeekReportDto,
+  ): Promise<WeekReportListVO> {
+    logger.info(
+      `update 更新数据请求参数: id:${id}, updateWeekReportDto: ${JSON.stringify(
+        updateWeekReportDto,
+      )} `,
+    );
+
+    const existWeekReport = await this.weekReportRepository.findOne(id);
+
+    if (!existWeekReport) {
+      throw new HttpException(
+        `id 为${id}的数据不存在`,
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+
+    const updateWeekReport = this.weekReportRepository.merge(
+      existWeekReport,
+      updateWeekReportDto,
+    );
+
+    logger.info(
+      `update 更新后的数据参数为: ${JSON.stringify(updateWeekReport)}`,
+    );
+
+    return this.weekReportRepository.save(updateWeekReport);
   }
 
-  update(id: number, updateWeekReportDto: UpdateWeekReportDto) {
-    return `This action updates a #${id} weekReport`;
-  }
+  /**
+   *
+   * @description 删除数据
+   */
+  async remove(id: number): Promise<WeekReportListVO> {
+    logger.info(`remove 删除数据请求参数: ${id}`);
 
-  remove(id: number) {
-    return `This action removes a #${id} weekReport`;
+    const existWeekReport = await this.weekReportRepository.findOne(id);
+
+    if (!existWeekReport) {
+      throw new HttpException(
+        `id 为${id}的数据不存在`,
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+
+    const deleteWeekReport = cloneDeep(existWeekReport);
+    deleteWeekReport.rcState = rcStateEnum.Deleted;
+
+    logger.info(
+      `update 更新后的数据参数为: ${JSON.stringify(deleteWeekReport)}`,
+    );
+
+    return await this.weekReportRepository.save(deleteWeekReport);
   }
 
   /**
